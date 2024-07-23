@@ -332,6 +332,7 @@ func (r *Reconciler) reconcileFailedSubmissionSparkApplication(ctx context.Conte
 				}
 			} else {
 				app.Status.AppState.State = v1beta2.ApplicationStateFailed
+				app.Status.TerminationTime = metav1.Now()
 				r.recordSparkApplicationEvent(app)
 			}
 

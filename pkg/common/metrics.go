@@ -32,7 +32,7 @@ const (
 
 	MetricSparkApplicationSuccessExecutionTimeSeconds = "spark_application_success_execution_time_seconds"
 
-	MetricSparkApplicationFailureExecutionTimeSeconds = "spark_application_failure_success_execution_time_seconds"
+	MetricSparkApplicationFailureExecutionTimeSeconds = "spark_application_failure_execution_time_seconds"
 
 	MetricSparkApplicationStartLatencySeconds = "spark_application_start_latency_seconds"
 
