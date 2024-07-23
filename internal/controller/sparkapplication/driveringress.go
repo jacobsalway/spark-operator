@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	networkingv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -279,7 +280,14 @@ func (r *Reconciler) createDriverIngressService(
 	}
 
 	if err := r.client.Create(context.TODO(), service); err != nil {
-		return nil, err
+		if !errors.IsAlreadyExists(err) {
+			return nil, err
+		}
+
+		// Update the service if it already exists.
+		if err := r.client.Update(context.TODO(), service); err != nil {
+			return nil, err
+		}
 	}
 
 	return &SparkService{
