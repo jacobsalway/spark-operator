@@ -314,7 +314,11 @@ func (r *Reconciler) reconcileFailedSubmissionSparkApplication(ctx context.Conte
 			if err != nil {
 				return err
 			}
+			if old.Status.AppState.State != v1beta2.ApplicationStateFailedSubmission {
+				return nil
+			}
 			app := old.DeepCopy()
+
 			if util.ShouldRetry(app) {
 				if isNextRetryDue(app) {
 					if r.validateSparkResourceDeletion(ctx, app) {
@@ -330,9 +334,7 @@ func (r *Reconciler) reconcileFailedSubmissionSparkApplication(ctx context.Conte
 				app.Status.AppState.State = v1beta2.ApplicationStateFailed
 				r.recordSparkApplicationEvent(app)
 			}
-			if err := r.updateSparkApplicationState(ctx, app); err != nil {
-				return err
-			}
+
 			if err := r.updateSparkApplicationStatus(ctx, app); err != nil {
 				return err
 			}
@@ -355,7 +357,11 @@ func (r *Reconciler) reconcileRunningSparkApplication(ctx context.Context, req c
 			if err != nil {
 				return err
 			}
+			if old.Status.AppState.State != v1beta2.ApplicationStateRunning {
+				return nil
+			}
 			app := old.DeepCopy()
+
 			if err := r.updateSparkApplicationState(ctx, app); err != nil {
 				return err
 			}
@@ -381,7 +387,11 @@ func (r *Reconciler) reconcilePendingRerunSparkApplication(ctx context.Context, 
 			if err != nil {
 				return err
 			}
+			if old.Status.AppState.State != v1beta2.ApplicationStatePendingRerun {
+				return nil
+			}
 			app := old.DeepCopy()
+
 			logger.Info("Pending rerun SparkApplication", "name", app.Name, "namespace", app.Namespace, "state", app.Status.AppState.State)
 			if r.validateSparkResourceDeletion(ctx, app) {
 				logger.Info("Successfully deleted resources associated with SparkApplication", "name", app.Name, "namespace", app.Namespace, "state", app.Status.AppState.State)
@@ -413,7 +423,11 @@ func (r *Reconciler) reconcileInvalidatingSparkApplication(ctx context.Context, 
 			if err != nil {
 				return err
 			}
+			if old.Status.AppState.State != v1beta2.ApplicationStateInvalidating {
+				return nil
+			}
 			app := old.DeepCopy()
+
 			// Invalidate the current run and enqueue the SparkApplication for re-execution.
 			if err := r.deleteSparkResources(ctx, app); err != nil {
 				logger.Error(err, "Failed to delete resources associated with SparkApplication", "name", app.Name, "namespace", app.Namespace)
@@ -443,7 +457,11 @@ func (r *Reconciler) reconcileSucceedingSparkApplication(ctx context.Context, re
 			if err != nil {
 				return err
 			}
+			if old.Status.AppState.State != v1beta2.ApplicationStateSucceeding {
+				return nil
+			}
 			app := old.DeepCopy()
+
 			if util.ShouldRetry(app) {
 				if err := r.deleteSparkResources(ctx, app); err != nil {
 					logger.Error(err, "failed to delete spark resources", "name", app.Name, "namespace", app.Namespace)
@@ -475,7 +493,11 @@ func (r *Reconciler) reconcileFailingSparkApplication(ctx context.Context, req c
 			if err != nil {
 				return err
 			}
+			if old.Status.AppState.State != v1beta2.ApplicationStateFailing {
+				return nil
+			}
 			app := old.DeepCopy()
+
 			if util.ShouldRetry(app) {
 				if isNextRetryDue(app) {
 					if err := r.deleteSparkResources(ctx, app); err != nil {
@@ -513,6 +535,7 @@ func (r *Reconciler) reconcileCompletedSparkApplication(ctx context.Context, req
 				return nil
 			}
 			app := old.DeepCopy()
+
 			if util.IsExpired(app) {
 				logger.Info("Deleting expired SparkApplication", "name", app.Name, "namespace", app.Namespace, "state", app.Status.AppState.State)
 				if err := r.client.Delete(ctx, app); err != nil {
@@ -552,8 +575,8 @@ func (r *Reconciler) reconcileFailedSparkApplication(ctx context.Context, req ct
 			if old.Status.AppState.State != v1beta2.ApplicationStateFailed {
 				return nil
 			}
-
 			app := old.DeepCopy()
+
 			if util.IsExpired(app) {
 				logger.Info("Deleting expired SparkApplication", "name", app.Name, "namespace", app.Namespace, "state", app.Status.AppState.State)
 				if err := r.client.Delete(ctx, app); err != nil {
@@ -594,6 +617,7 @@ func (r *Reconciler) reconcileUnknownSparkApplication(ctx context.Context, req c
 				return nil
 			}
 			app := old.DeepCopy()
+
 			if err := r.updateSparkApplicationState(ctx, app); err != nil {
 				return err
 			}
@@ -899,13 +923,6 @@ func (r *Reconciler) updateSparkApplicationState(ctx context.Context, app *v1bet
 		return err
 	}
 
-	return nil
-}
-
-func (r *Reconciler) updateSparkApplication(ctx context.Context, app *v1beta2.SparkApplication) error {
-	if err := r.client.Update(ctx, app); err != nil {
-		return err
-	}
 	return nil
 }
 
