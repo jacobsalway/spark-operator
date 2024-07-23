@@ -166,8 +166,8 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	logger.Info("Reconciling SparkApplication", "name", app.Name, "namespace", app.Namespace, "state", app.Status.AppState.State)
 
 	// Check if the spark application is being deleted
-	if !app.DeletionTimestamp.IsZero() && util.ContainsString(app.Finalizers, common.SparkApplicationFinalizerName) {
-		return r.finalizeSparkApplication(ctx, req)
+	if !app.DeletionTimestamp.IsZero() {
+		return r.handleSparkApplicationDeletion(ctx, req)
 	}
 	switch app.Status.AppState.State {
 	case v1beta2.ApplicationStateNew:
@@ -220,39 +220,19 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager, options controller.Optio
 		Complete(r)
 }
 
-func (r *Reconciler) finalizeSparkApplication(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *Reconciler) handleSparkApplicationDeletion(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	key := req.NamespacedName
-	if retryErr := retry.RetryOnConflict(
-		retry.DefaultRetry,
-		func() error {
-			old, err := r.getSparkApplication(key)
-			if err != nil {
-				if errors.IsNotFound(err) {
-					return nil
-				}
-				return err
-			}
-			if old.DeletionTimestamp.IsZero() || !util.ContainsString(old.Finalizers, common.SparkApplicationFinalizerName) {
-				return nil
-			}
-			app := old.DeepCopy()
+	app, err := r.getSparkApplication(key)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{Requeue: true}, err
+	}
 
-			if err := r.deleteSparkResources(ctx, app); err != nil {
-				logger.Error(err, "Failed to delete resources associated with the SparkApplication", "name", app.Name, "namespace", app.Namespace)
-				return err
-			}
-
-			// Remove our finalizer after cleaning up
-			app.Finalizers = util.RemoveString(app.Finalizers, common.SparkApplicationFinalizerName)
-			if err := r.updateSparkApplication(ctx, app); err != nil {
-				return err
-			}
-
-			return nil
-		},
-	); retryErr != nil {
-		logger.Error(retryErr, "Failed to finalize SparkApplication", "name", key.Name, "namespace", key.Namespace)
-		return ctrl.Result{Requeue: true}, retryErr
+	if err := r.deleteSparkResources(ctx, app); err != nil {
+		logger.Error(err, "Failed to delete resources associated with SparkApplication", "name", app.Name, "namespace", app.Namespace)
+		return ctrl.Result{Requeue: true}, err
 	}
 	return ctrl.Result{}, nil
 }
@@ -270,15 +250,6 @@ func (r *Reconciler) reconcileNewSparkApplication(ctx context.Context, req ctrl.
 				return nil
 			}
 			app := old.DeepCopy()
-
-			// If the application does not have our finalizer, add it.
-			if !util.ContainsString(app.Finalizers, common.SparkApplicationFinalizerName) {
-				app.Finalizers = append(app.Finalizers, common.SparkApplicationFinalizerName)
-				if err := r.updateSparkApplication(ctx, app); err != nil {
-					return err
-				}
-				return nil
-			}
 
 			if err := r.submitSparkApplication(app); err != nil {
 				logger.Error(err, "Failed to submit SparkApplication", "name", app.Name, "namespace", app.Namespace)
