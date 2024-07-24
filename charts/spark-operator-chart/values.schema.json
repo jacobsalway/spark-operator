@@ -1,0 +1,383 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "nameOverride": {
+      "type": "string",
+      "description": "Partially override `spark-operator.fullname` template."
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Override release name."
+    },
+    "commonLabels": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Common labels to add to resources."
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "registry": {
+          "type": "string",
+          "default": "docker.io"
+        },
+        "repository": {
+          "type": "string",
+          "default": "kubeflow/spark-operator"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "default": "IfNotPresent"
+        },
+        "pullSecrets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "controller": {
+      "type": "object",
+      "properties": {
+        "replicaCount": {
+          "type": "integer",
+          "default": 1
+        },
+        "logLevel": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "error"
+          ],
+          "default": "info"
+        },
+        "uiService": {
+          "type": "object",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "ingressUrlFormat": {
+          "type": "string"
+        },
+        "workers": {
+          "type": "integer"
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "name": {
+              "type": "string"
+            },
+            "annotations": {
+              "type": "object"
+            }
+          }
+        },
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "webhook": {
+      "type": "object",
+      "properties": {
+        "replicaCount": {
+          "type": "integer",
+          "default": 1
+        },
+        "logLevel": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "error"
+          ],
+          "default": "info"
+        },
+        "port": {
+          "type": "integer",
+          "default": 9443
+        },
+        "portName": {
+          "type": "string",
+          "default": "webhook"
+        },
+        "failurePolicy": {
+          "type": "string",
+          "enum": [
+            "Fail",
+            "Ignore"
+          ],
+          "default": "Fail"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 30
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "name": {
+              "type": "string"
+            },
+            "annotations": {
+              "type": "object"
+            }
+          }
+        },
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "annotations": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "spark": {
+      "type": "object",
+      "properties": {
+        "jobNamespaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "default"
+          ]
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "name": {
+              "type": "string"
+            },
+            "annotations": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "rbac": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "annotations": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "prometheus": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "default": true
+            },
+            "port": {
+              "type": "integer",
+              "default": 8080
+            },
+            "portName": {
+              "type": "string",
+              "default": "metrics"
+            },
+            "prefix": {
+              "type": "string"
+            }
+          }
+        },
+        "podMonitor": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean",
+              "default": true
+            },
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "podMetricsEndpoint": {
+              "type": "object",
+              "properties": {
+                "schema": {
+                  "type": "string",
+                  "default": "http"
+                },
+                "interval": {
+                  "type": "string",
+                  "default": "5s"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "podLabels": {
+      "description": "Additional labels to add to the pod",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "podAnnotations": {
+      "description": "Additional annotations to add to the pod",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "envFrom": {
+      "description": "Additional environment variables sources to add to the pod",
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "volumeMounts": {
+      "description": "Extra volume mounts",
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "sidecars": {
+      "description": "Extra sidecar containers",
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "volumes": {
+      "description": "Extra volumes",
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "nodeSelector": {
+      "description": "Node selector for pod assignment",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "affinity": {
+      "description": "Affinity for pod assignment",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "tolerations": {
+      "description": "List of node taints to tolerate",
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "priorityClassName": {
+      "description": "Priority class assigned to pods",
+      "type": "string"
+    },
+    "resources": {
+      "description": "Resources for pods",
+      "type": "object"
+    },
+    "podSecurityContext": {
+      "description": "Pod security context",
+      "type": "object"
+    },
+    "securityContext": {
+      "description": "Container security context",
+      "type": "object"
+    },
+    "batchScheduler": {
+      "enable": {
+        "description": "Enable batch scheduler",
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "resourceQuotaEnforcement": {
+      "properties": {
+        "enable": {
+          "description": "Whether to enable the ResourceQuota enforcement for SparkApplication resources.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "istio": {
+      "properties": {
+        "enable": {
+          "description": "spark jobs need to run without a sidecar to properly terminate.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  }
+}
