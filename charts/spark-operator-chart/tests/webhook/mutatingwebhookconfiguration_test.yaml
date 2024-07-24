@@ -24,18 +24,7 @@ release:
   namespace: spark-operator
 
 tests:
-  - it: Should not create the mutating webhook configuration if `webhook.enable` is false
-    set:
-      webhook:
-        enable: false
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: Should create the mutating webhook configuration if `webhook.enable` is true
-    set:
-      webhook:
-        enable: true
+  - it: Should create the mutating webhook configuration by default
     asserts:
       - containsDocument:
           apiVersion: admissionregistration.k8s.io/v1
@@ -45,7 +34,6 @@ tests:
   - it: Should use the specified webhook port
     set:
       webhook:
-        enable: true
         port: 12345
     asserts:
       - equal:
@@ -55,7 +43,6 @@ tests:
   - it: Should use the specified failure policy
     set:
       webhook:
-        enable: true
         failurePolicy: Fail
     asserts:
       - equal:
@@ -64,8 +51,6 @@ tests:
 
   - it: Should set namespaceSelector if sparkJobNamespaces is not empty
     set:
-      webhook:
-        enable: true
       spark:
         jobNamespaces:
           - ns1
@@ -86,7 +71,6 @@ tests:
   - it: Should should use the specified timeoutSeconds
     set:
       webhook:
-        enable: true
         timeoutSeconds: 5
     asserts:
       - equal:

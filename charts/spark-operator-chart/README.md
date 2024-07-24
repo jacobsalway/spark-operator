@@ -1,6 +1,6 @@
 # spark-operator
 
-![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![AppVersion: v1beta2-2.0.0-3.5.0](https://img.shields.io/badge/AppVersion-v1beta2--2.0.0--3.5.0-informational?style=flat-square)
+![Version: 2.0.0-rc.0](https://img.shields.io/badge/Version-2.0.0--rc.0-informational?style=flat-square) ![AppVersion: 2.0.0-rc.0](https://img.shields.io/badge/AppVersion-2.0.0--rc.0-informational?style=flat-square)
 
 A Helm chart for Spark on Kubernetes operator.
 
@@ -75,70 +75,66 @@ See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall) for command docum
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| affinity | object | `{}` | Affinity for pod assignment |
-| batchScheduler.enable | bool | `false` | Enable batch scheduler for spark jobs scheduling. If enabled, users can specify batch scheduler name in spark application |
-| commonLabels | object | `{}` | Common labels to add to the resources |
-| controller.ingressUrlFormat | string | `""` | Ingress URL format. Requires the UI service to be enabled by setting `controller.uiService.enable` to true. |
+| nameOverride | string | `""` | String to partially override `spark-operator.fullname` template (will maintain the release name). |
+| fullnameOverride | string | `""` | String to override release name. |
+| commonLabels | object | `{}` | Common labels to add to the resources. |
+| image.registry | string | `"docker.io"` | Image registry. |
+| image.repository | string | `"kubeflow/spark-operator"` | Image repository. |
+| image.tag | string | If not set, the chart appVersion will be used. | Image tag. |
+| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy. |
+| image.pullSecrets | list | `[]` | Image pull secrets for private image registry. |
+| controller.replicaCount | int | `1` | Number of replicas of controller. |
 | controller.logLevel | string | `"info"` | Configure the verbosity of logging, can be one of `debug`, `info`, `error`. |
-| controller.rbac.annotations | object | `{}` | Optional annotations for the controller RBAC resources |
-| controller.rbac.create | bool | `true` | Specifies whether to create RBAC resources for the controller |
-| controller.replicaCount | int | `1` | Number of replicas of controller, leader election will be enabled if this is greater than 1. |
-| controller.resyncInterval | int | `30` | Operator resync interval. Note that the operator will respond to events (e.g. create, update) unrelated to this setting |
-| controller.serviceAccount.annotations | object | `{}` | Optional annotations for the controller service account |
-| controller.serviceAccount.create | bool | `true` | Specifies whether to create a service account for the controller |
-| controller.serviceAccount.name | string | `""` | Optional name for the controller service account |
 | controller.uiService.enable | bool | `true` | Specifies whether to create web UI service for Spark application. |
-| controller.workers | int | `10` | Operator concurrency, higher values might increase memory usage |
-| envFrom | list | `[]` | Pod environment variable sources |
-| fullnameOverride | string | `""` | String to override release name |
-| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
-| image.pullSecrets | list | `[]` | Image pull secrets |
-| image.repository | string | `"docker.io/kubeflow/spark-operator"` | Image repository |
-| image.tag | string | `""` | Image tag, if not set, the chart appVersion will be used. |
-| istio.enable | bool | `false` | When using `istio`, spark jobs need to run without a sidecar to properly terminate |
-| nameOverride | string | `""` | String to partially override `spark-operator.fullname` template (will maintain the release name) |
-| nodeSelector | object | `{}` | Node labels for pod assignment |
-| podAnnotations | object | `{}` | Additional annotations to add to the pod |
-| podDisruptionBudget | object | `{"enable":false,"minAvailable":1}` | podDisruptionBudget to avoid service degradation |
-| podDisruptionBudget.enable | bool | `false` | Specifies whether to enable pod disruption budget. Ref: [Specifying a Disruption Budget for your Application](https://kubernetes.io/docs/tasks/run-application/configure-pdb/) |
-| podDisruptionBudget.minAvailable | int | `1` | The number of pods that must be available. Require `replicaCount` to be greater than 1 |
-| podLabels | object | `{}` | Additional labels to add to the pod |
-| podSecurityContext | object | `{}` | Pod security context |
-| priorityClassName | string | `""` | A priority class to be used for running spark-operator pod. |
-| prometheus.metrics.enable | bool | `true` | Specifies whether to enable prometheus metrics scraping |
-| prometheus.metrics.endpoint | string | `"/metrics"` | Metrics serving endpoint |
-| prometheus.metrics.port | int | `8080` | Metrics port |
-| prometheus.metrics.portName | string | `"metrics"` | Metrics port name |
-| prometheus.metrics.prefix | string | `""` | Metrics prefix, will be added to all exported metrics |
-| prometheus.podMonitor.create | bool | `false` | Specifies whether to create pod monitor. Note that prometheus metrics should be enabled as well. |
-| prometheus.podMonitor.jobLabel | string | `"spark-operator-podmonitor"` | The label to use to retrieve the job name from |
-| prometheus.podMonitor.labels | object | `{}` | Pod monitor labels |
-| prometheus.podMonitor.podMetricsEndpoint | object | `{"interval":"5s","scheme":"http"}` | Prometheus metrics endpoint properties. `metrics.portName` will be used as a port |
-| resourceQuotaEnforcement.enable | bool | `false` | Whether to enable the ResourceQuota enforcement for SparkApplication resources. Requires the webhook to be enabled by setting `webhook.enable` to true. Ref: https://github.com/kubeflow/spark-operator/blob/master/docs/user-guide.md#enabling-resource-quota-enforcement. |
-| resources | object | `{}` | Pod resource requests and limits Note, that each job submission will spawn a JVM within the Spark Operator Pod using "/usr/local/openjdk-11/bin/java -Xmx128m". Kubernetes may kill these Java processes at will to enforce resource limits. When that happens, you will see the following error: 'failed to run spark-submit for SparkApplication [...]: signal: killed' - when this happens, you may want to increase memory limits. |
-| securityContext | object | `{}` | Container security context |
-| sidecars | list | `[]` | Sidecar containers |
-| spark.jobNamespaces | list | `["default"]` | List of namespaces where to run spark jobs. If empty string is included, all namespaces will be allowed. Make sure the namespaces have already existed. |
-| spark.rbac.annotations | object | `{}` | Optional annotations for the spark application RBAC resources |
-| spark.rbac.create | bool | `true` | Specifies whether to create RBAC resources for spark applications |
-| spark.serviceAccount.annotations | object | `{}` | Optional annotations for the spark service account |
-| spark.serviceAccount.create | bool | `true` | Specifies whether to create a service account for spark applications |
-| spark.serviceAccount.name | string | `""` | Optional name for the spark service account |
-| tolerations | list | `[]` | List of node taints to tolerate |
-| volumeMounts | list | `[]` | Operator volumeMounts |
-| volumes | list | `[]` |  |
-| webhook.enable | bool | `true` | Specifies whether to enable webhook server |
-| webhook.failurePolicy | string | `"Fail"` | Specifies how unrecognized errors are handled, allowed values are `Ignore` or `Fail`. |
-| webhook.logLevel | string | `"info"` | Configure the verbosity of logging, can be one of `debug`, `info`, `error` |
+| controller.ingressUrlFormat | string | `""` | Ingress URL format. Requires the UI service to be enabled by setting `controller.uiService.enable` to true. |
+| controller.workers | int | `10` | Operator concurrency, higher values might increase memory usage. |
+| controller.serviceAccount.create | bool | `true` | Specifies whether to create a service account for the controller. |
+| controller.serviceAccount.name | string | `""` | Optional name for the controller service account. |
+| controller.serviceAccount.annotations | object | `{}` | Optional annotations for the controller service account. |
+| controller.rbac.create | bool | `true` | Specifies whether to create RBAC resources for the controller. |
+| controller.rbac.annotations | object | `{}` | Optional annotations for the controller RBAC resources. |
+| webhook.replicaCount | int | `1` | Number of replicas of webhook server |
+| webhook.logLevel | string | `"info"` | Configure the verbosity of logging, can be one of `debug`, `info`, `error`. |
 | webhook.port | int | `9443` | Specifies webhook port |
 | webhook.portName | string | `"webhook"` | Specifies webhook service port name |
-| webhook.rbac.annotations | object | `{}` | Optional annotations for the webhook RBAC resources |
-| webhook.rbac.create | bool | `true` | Specifies whether to create RBAC resources for the webhook |
-| webhook.replicaCount | int | `1` | Number of replicas of webhook server |
-| webhook.serviceAccount.annotations | object | `{}` | Optional annotations for the webhook service account |
+| webhook.failurePolicy | string | `"Fail"` | Specifies how unrecognized errors are handled, allowed values are `Ignore` or `Fail`. |
+| webhook.timeoutSeconds | int | `10` | Specifies the timeout seconds of the webhook, the value must be between 1 and 30. |
 | webhook.serviceAccount.create | bool | `true` | Specifies whether to create a service account for the webhook |
 | webhook.serviceAccount.name | string | `""` | Optional name for the webhook service account |
-| webhook.timeoutSeconds | int | `10` | Specifies the timeout seconds of the webhook, the value must be between 1 and 30. |
+| webhook.serviceAccount.annotations | object | `{}` | Optional annotations for the webhook service account |
+| webhook.rbac.create | bool | `true` | Specifies whether to create RBAC resources for the webhook |
+| webhook.rbac.annotations | object | `{}` | Optional annotations for the webhook RBAC resources |
+| spark.jobNamespaces | list | `["default"]` | List of namespaces where to run spark jobs. If empty string is included, all namespaces will be allowed. Make sure the namespaces have already existed. |
+| spark.serviceAccount.create | bool | `true` | Specifies whether to create a service account for spark applications. |
+| spark.serviceAccount.name | string | `""` | Optional name for the spark service account. |
+| spark.serviceAccount.annotations | object | `{}` | Optional annotations for the spark service account. |
+| spark.rbac.create | bool | `true` | Specifies whether to create RBAC resources for spark applications. |
+| spark.rbac.annotations | object | `{}` | Optional annotations for the spark application RBAC resources. |
+| prometheus.metrics.enable | bool | `true` | Specifies whether to enable prometheus metrics scraping. |
+| prometheus.metrics.port | int | `8080` | Metrics port. |
+| prometheus.metrics.portName | string | `"metrics"` | Metrics port name. |
+| prometheus.metrics.endpoint | string | `"/metrics"` | Metrics serving endpoint. |
+| prometheus.metrics.prefix | string | `""` | Metrics prefix, will be added to all exported metrics. |
+| prometheus.podMonitor.create | bool | `false` | Specifies whether to create pod monitor. Note that prometheus metrics should be enabled as well. |
+| prometheus.podMonitor.labels | object | `{}` | Pod monitor labels |
+| prometheus.podMonitor.jobLabel | string | `"spark-operator-podmonitor"` | The label to use to retrieve the job name from |
+| prometheus.podMonitor.podMetricsEndpoint | object | `{"interval":"5s","scheme":"http"}` | Prometheus metrics endpoint properties. `metrics.portName` will be used as a port |
+| podLabels | object | `{}` | Additional labels to add to the pod |
+| podAnnotations | object | `{}` | Additional annotations to add to the pod |
+| envFrom | list | `[]` | Pod environment variable sources |
+| volumeMounts | list | `[]` | Operator volumeMounts |
+| sidecars | list | `[]` | Sidecar containers |
+| volumes | list | `[]` |  |
+| nodeSelector | object | `{}` | Node selector for pod assignment. |
+| affinity | object | `{}` | Affinity for pod assignment. |
+| tolerations | list | `[]` | List of node taints to tolerate |
+| priorityClassName | string | `""` | Priority class assigned to pods. |
+| resources | object | `{}` | Pod resource requests and limits Note, that each job submission will spawn a JVM within the Spark Operator Pod using "/usr/local/openjdk-11/bin/java -Xmx128m". Kubernetes may kill these Java processes at will to enforce resource limits. When that happens, you will see the following error: 'failed to run spark-submit for SparkApplication [...]: signal: killed' - when this happens, you may want to increase memory limits. |
+| podSecurityContext | object | `{}` | Pod security context |
+| securityContext | object | `{}` | Container security context |
+| batchScheduler.enable | bool | `false` | Enable batch scheduler for spark jobs scheduling. If enabled, users can specify batch scheduler name in spark application |
+| resourceQuotaEnforcement.enable | bool | `false` | Whether to enable the ResourceQuota enforcement for SparkApplication resources. Requires the webhook to be enabled by setting `webhook.enable` to true. Ref: https://github.com/kubeflow/spark-operator/blob/master/docs/user-guide.md#enabling-resource-quota-enforcement. |
+| istio.enable | bool | `false` | When using `istio`, spark jobs need to run without a sidecar to properly terminate |
 
 ## Maintainers
 

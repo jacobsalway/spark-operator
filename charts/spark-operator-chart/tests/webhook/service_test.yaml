@@ -24,18 +24,9 @@ release:
   namespace: spark-operator
 
 tests:
-  - it: Should not create the webhook service if webhook.enable is false
+  - it: Should create the webhook service correctly
     set:
       webhook:
-        enable: false
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: Should create the webhook service correctly if webhook.enable is true
-    set:
-      webhook:
-        enable: true
         portName: webhook
     asserts:
       - containsDocument:

@@ -18,28 +18,31 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# -- String to partially override `spark-operator.fullname` template (will maintain the release name)
+# -- String to partially override `spark-operator.fullname` template (will maintain the release name).
 nameOverride: ""
 
-# -- String to override release name
+# -- String to override release name.
 fullnameOverride: ""
 
-# -- Common labels to add to the resources
+# -- Common labels to add to the resources.
 commonLabels: {}
 
 image:
-  # -- Image repository
-  repository: docker.io/kubeflow/spark-operator
-  # -- Image tag, if not set, the chart appVersion will be used.
+  # -- Image registry.
+  registry: docker.io
+  # -- Image repository.
+  repository: kubeflow/spark-operator
+  # -- Image tag.
+  # @default -- If not set, the chart appVersion will be used.
   tag: ""
-  # -- Image pull policy
+  # -- Image pull policy.
   pullPolicy: IfNotPresent
-  # -- Image pull secrets
+  # -- Image pull secrets for private image registry.
   pullSecrets: []
   # - name: <secret-name>
 
 controller:
-  # -- Number of replicas of controller, leader election will be enabled if this is greater than 1.
+  # -- Number of replicas of controller.
   replicaCount: 1
 
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
@@ -53,35 +56,28 @@ controller:
   # Requires the UI service to be enabled by setting `controller.uiService.enable` to true.
   ingressUrlFormat: ""
 
-  # -- Operator concurrency, higher values might increase memory usage
+  # -- Operator concurrency, higher values might increase memory usage.
   workers: 10
 
-  # -- Operator resync interval. Note that the operator will respond to events (e.g. create, update)
-  # unrelated to this setting
-  resyncInterval: 30
-
   serviceAccount:
-    # -- Specifies whether to create a service account for the controller
+    # -- Specifies whether to create a service account for the controller.
     create: true
-    # -- Optional name for the controller service account
+    # -- Optional name for the controller service account.
     name: ""
-    # -- Optional annotations for the controller service account
+    # -- Optional annotations for the controller service account.
     annotations: {}
 
   rbac:
-    # -- Specifies whether to create RBAC resources for the controller
+    # -- Specifies whether to create RBAC resources for the controller.
     create: true
-    # -- Optional annotations for the controller RBAC resources
+    # -- Optional annotations for the controller RBAC resources.
     annotations: {}
 
 webhook:
-  # -- Specifies whether to enable webhook server
-  enable: true
-
   # -- Number of replicas of webhook server
   replicaCount: 1
 
-  # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`
+  # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
 
   # -- Specifies webhook port
@@ -118,30 +114,30 @@ spark:
   - default
 
   serviceAccount:
-    # -- Specifies whether to create a service account for spark applications
+    # -- Specifies whether to create a service account for spark applications.
     create: true
-    # -- Optional name for the spark service account
+    # -- Optional name for the spark service account.
     name: ""
-    # -- Optional annotations for the spark service account
+    # -- Optional annotations for the spark service account.
     annotations: {}
 
   rbac:
-    # -- Specifies whether to create RBAC resources for spark applications
+    # -- Specifies whether to create RBAC resources for spark applications.
     create: true
-    # -- Optional annotations for the spark application RBAC resources
+    # -- Optional annotations for the spark application RBAC resources.
     annotations: {}
 
 prometheus:
   metrics:
-    # -- Specifies whether to enable prometheus metrics scraping
+    # -- Specifies whether to enable prometheus metrics scraping.
     enable: true
-    # -- Metrics port
+    # -- Metrics port.
     port: 8080
-    # -- Metrics port name
+    # -- Metrics port name.
     portName: metrics
-    # -- Metrics serving endpoint
+    # -- Metrics serving endpoint.
     endpoint: /metrics
-    # -- Metrics prefix, will be added to all exported metrics
+    # -- Metrics prefix, will be added to all exported metrics.
     prefix: ""
 
   # Prometheus pod monitor for controller pods
@@ -157,15 +153,6 @@ prometheus:
     podMetricsEndpoint:
       scheme: http
       interval: 5s
-
-# -- podDisruptionBudget to avoid service degradation
-podDisruptionBudget:
-  # -- Specifies whether to enable pod disruption budget.
-  # Ref: [Specifying a Disruption Budget for your Application](https://kubernetes.io/docs/tasks/run-application/configure-pdb/)
-  enable: false
-  # -- The number of pods that must be available.
-  # Require `replicaCount` to be greater than 1
-  minAvailable: 1
 
 # -- Additional labels to add to the pod
 podLabels: {}
@@ -185,16 +172,16 @@ sidecars: []
 # - Operator volumes
 volumes: []
 
-# -- Node labels for pod assignment
+# -- Node selector for pod assignment.
 nodeSelector: {}
 
-# -- Affinity for pod assignment
+# -- Affinity for pod assignment.
 affinity: {}
 
 # -- List of node taints to tolerate
 tolerations: []
 
-# -- A priority class to be used for running spark-operator pod.
+# -- Priority class assigned to pods.
 priorityClassName: ""
 
 # -- Pod resource requests and limits

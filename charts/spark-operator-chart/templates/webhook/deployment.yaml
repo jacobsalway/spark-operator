@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */}}
 
-{{- if .Values.webhook.enable -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,6 +31,9 @@ spec:
     metadata:
       labels:
         {{- include "spark-operator.webhook.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8}}
+      {{- end }}
       {{- with .Values.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
@@ -59,7 +61,7 @@ spec:
         - --webhook-port={{ .Values.webhook.port }}
         - --mutating-webhook-name={{ include "spark-operator.webhook.name" . }}
         - --validating-webhook-name={{ include "spark-operator.webhook.name" . }}
-        {{- if .Values.resourceQuotaEnforcement.enable }}
+        {{- with .Values.resourceQuotaEnforcement.enable }}
         - --enable-resource-quota-enforcement=true
         {{- end }}
         {{- if .Values.prometheus.metrics.enable }}
@@ -121,4 +123,3 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}

@@ -32,7 +32,7 @@ spec:
       labels:
         {{- include "spark-operator.controller.selectorLabels" . | nindent 8 }}
         {{- with .Values.podLabels }}
-          {{- toYaml . | trim | nindent 8 }}
+          {{- toYaml . | nindent 8 }}
         {{- end }}
       {{- if or .Values.podAnnotations .Values.prometheus.metrics.enable }}
       annotations:
@@ -42,7 +42,7 @@ spec:
         prometheus.io/path: {{ .Values.prometheus.metrics.endpoint }}
       {{- end }}
       {{- with .Values.podAnnotations }}
-        {{- toYaml . | trim | nindent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- end }}
     spec:
@@ -61,10 +61,16 @@ spec:
         {{- with .Values.spark.jobNamespaces }}
         - --namespaces={{ . | join "," }}
         {{- end }}
-        - --enable-ui-service={{ .Values.controller.uiService.enable}}
-        - --ingress-url-format={{ .Values.controller.ingressUrlFormat }}
         - --controller-threads={{ .Values.controller.workers }}
-        - --enable-batch-scheduler={{ .Values.batchScheduler.enable }}
+        {{- with .Values.controller.uiService.enable }}
+        - --enable-ui-service=true
+        {{- end }}
+        {{- with .Values.controller.ingressUrlFormat }}
+        - --ingress-url-format={{ . }}
+        {{- end }}
+        {{- with .Values.batchScheduler.enable }}
+        - --enable-batch-scheduler=true
+        {{- end }}
         {{- if .Values.prometheus.metrics.enable }}
         - --enable-metrics=true
         - --metrics-bind-address=:{{ .Values.prometheus.metrics.port }}

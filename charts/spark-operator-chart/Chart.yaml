@@ -17,8 +17,8 @@
 apiVersion: v2
 name: spark-operator
 description: A Helm chart for Spark on Kubernetes operator.
-version: 2.0.0
-appVersion: v1beta2-2.0.0-3.5.0
+version: 2.0.0-rc.0
+appVersion: 2.0.0-rc.0
 keywords:
 - apache spark
 - big data
