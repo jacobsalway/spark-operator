@@ -211,8 +211,8 @@ helm-lint: ## Run Helm chart lint test.
 	docker run --rm --workdir /workspace --volume "$$(pwd):/workspace" quay.io/helmpack/chart-testing:latest ct lint --target-branch master
 
 .PHONY: helm-docs
-helm-docs: ## Generates markdown documentation for helm charts from requirements and values files.
-	docker run --rm --volume "$$(pwd):/helm-docs" -u "$(id -u)" jnorwood/helm-docs:latest
+helm-docs: helm-docs-plugin ## Generates markdown documentation for helm charts from requirements and values files.
+	$(HELM_DOCS) --sort-values-order=file
 
 ##@ Deployment
 
@@ -269,6 +269,7 @@ GOLANGCI_LINT = $(LOCALBIN)/golangci-lint-$(GOLANGCI_LINT_VERSION)
 GEN_CRD_API_REFERENCE_DOCS ?= $(LOCALBIN)/gen-crd-api-reference-docs-$(GEN_CRD_API_REFERENCE_DOCS_VERSION)
 HELM ?= helm
 HELM_UNITTEST ?= unittest
+HELM_DOCS ?= $(LOCALBIN)/helm-docs-$(HELM_DOCS_VERSION)
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.1
@@ -278,6 +279,7 @@ ENVTEST_VERSION ?= release-0.18
 GOLANGCI_LINT_VERSION ?= v1.57.2
 GEN_CRD_API_REFERENCE_DOCS_VERSION ?= v0.3.0
 HELM_UNITTEST_VERSION ?= 0.5.1
+HELM_DOCS_VERSION ?= v1.14.2
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
@@ -315,6 +317,10 @@ helm-unittest-plugin: ## Download helm unittest plugin locally if necessary.
 		echo "Installing helm unittest plugin"; \
 		helm plugin install https://github.com/helm-unittest/helm-unittest.git --version $(HELM_UNITTEST_VERSION); \
 	fi
+
+.PHONY: helm-docs-plugin
+helm-docs-plugin: ## Download helm-docs plugin locally if necessary.
+	$(call go-install-tool,$(HELM_DOCS),github.com/norwoodj/helm-docs/cmd/helm-docs,$(HELM_DOCS_VERSION))
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary (ideally with version)
