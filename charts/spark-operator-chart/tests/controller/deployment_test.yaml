@@ -34,11 +34,26 @@ tests:
           path: spec.template.spec.containers[0].args
           content: --namespaces=ns1,ns2
 
-  - it: Should add pod annotations if podAnnotations is set
+  - it: Should add pod labels if `controller.labels` is set
     set:
-      podAnnotations:
-        key1: value1
-        key2: value2
+      controller:
+        labels:
+          key1: value1
+          key2: value2
+    asserts:
+      - equal:
+          path: spec.template.metadata.labels.key1
+          value: value1
+      - equal:
+          path: spec.template.metadata.labels.key2
+          value: value2
+
+  - it: Should add pod annotations if `controller.annotations` is set
+    set:
+      controller:
+        annotations:
+          key1: value1
+          key2: value2
     asserts:
       - equal:
           path: spec.template.metadata.annotations.key1
@@ -47,7 +62,7 @@ tests:
           path: spec.template.metadata.annotations.key2
           value: value2
 
-  - it: Should add prometheus annotations if metrics.enable is true
+  - it: Should add prometheus annotations if `metrics.enable` is true
     set:
       prometheus:
         metrics:
@@ -85,36 +100,6 @@ tests:
           path: spec.template.spec.containers[0].imagePullPolicy
           value: Always
 
-  - it: Should add secrets if `image.pullSecrets` is set
-    set:
-      image.pullSecrets:
-        - name: test-secret1
-        - name: test-secret2
-    asserts:
-      - equal:
-          path: spec.template.spec.imagePullSecrets[0].name
-          value: test-secret1
-      - equal:
-          path: spec.template.spec.imagePullSecrets[1].name
-          value: test-secret2
-
-  - it: Should add container securityContext if `securityContext` is set
-    set:
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 2000
-        fsGroup: 3000
-    asserts:
-      - equal:
-          path: spec.template.spec.containers[0].securityContext.runAsUser
-          value: 1000
-      - equal:
-          path: spec.template.spec.containers[0].securityContext.runAsGroup
-          value: 2000
-      - equal:
-          path: spec.template.spec.containers[0].securityContext.fsGroup
-          value: 3000
-
   - it: Should add metric ports if `metrics.enable` is true
     set:
       prometheus:
@@ -130,15 +115,68 @@ tests:
             containerPort: 10254
           count: 1
 
-  - it: Should add resources if `resources` is set
+  - it: Should add environment variables if `controller.env` is set
     set:
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      controller:
+        env:
+          - name: ENV_NAME_1
+            value: ENV_VALUE_1
+          - name: ENV_NAME_2
+            valueFrom:
+              configMapKeyRef:
+                name: test-configmap
+                key: test-key
+                optional: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: ENV_NAME_1
+            value: ENV_VALUE_1
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: ENV_NAME_2
+            valueFrom:
+              configMapKeyRef:
+                name: test-configmap
+                key: test-key
+                optional: false
+
+  - it: Should add environment variable sources if `controller.envFrom` is set
+    set:
+      controller:
+        envFrom:
+          - configMapRef:
+              name: test-configmap
+              optional: false
+          - secretRef:
+              name: test-secret
+              optional: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            configMapRef:
+              name: test-configmap
+              optional: false
+      - contains:
+          path: spec.template.spec.containers[0].envFrom
+          content:
+            secretRef:
+              name: test-secret
+              optional: false
+
+  - it: Should add resources if `controller.resources` is set
+    set:
+      controller:
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
     asserts:
       - equal:
           path: spec.template.spec.containers[0].resources
@@ -150,74 +188,105 @@ tests:
               memory: "128Mi"
               cpu: "500m"
 
-  - it: Should add sidecars if `sidecars` is set
+  - it: Should add container securityContext if `controller.securityContext` is set
     set:
-      sidecars:
-        - name: sidecar1
-          image: sidecar-image1
-        - name: sidecar2
-          image: sidecar-image2
+      controller:
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 2000
+          fsGroup: 3000
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsGroup
+          value: 2000
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.fsGroup
+          value: 3000
+
+  - it: Should add sidecars if `controller.sidecars` is set
+    set:
+      controller:
+        sidecars:
+          - name: sidecar1
+            image: sidecar-image1
+          - name: sidecar2
+            image: sidecar-image2
     asserts:
       - contains:
           path: spec.template.spec.containers
           content:
             name: sidecar1
             image: sidecar-image1
-          count: 1
       - contains:
           path: spec.template.spec.containers
           content:
             name: sidecar2
             image: sidecar-image2
-          count: 1
 
-  - it: Should add volumes if `volumes` is set
+  - it: Should add secrets if `image.pullSecrets` is set
     set:
-      volumes:
-        - name: volume1
-          emptyDir: {}
-        - name: volume2
-          emptyDir: {}
+      image.pullSecrets:
+        - name: test-secret1
+        - name: test-secret2
     asserts:
-      - contains:
-          path: spec.template.spec.volumes
-          content:
-            name: volume1
-            emptyDir: {}
-          count: 1
-      - contains:
-          path: spec.template.spec.volumes
-          content:
-            name: volume2
-            emptyDir: {}
-          count: 1
+      - equal:
+          path: spec.template.spec.imagePullSecrets[0].name
+          value: test-secret1
+      - equal:
+          path: spec.template.spec.imagePullSecrets[1].name
+          value: test-secret2
 
-  - it: Should add volume mounts if `volumeMounts` is set
+  - it: Should add volume mounts if `controller.volumeMounts` is set
     set:
-      volumeMounts:
-        - name: volume1
-          mountPath: /volume1
-        - name: volume2
-          mountPath: /volume2
+      controller:
+        volumeMounts:
+          - name: volume1
+            mountPath: /volume1
+          - name: volume2
+            mountPath: /volume2
     asserts:
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
             name: volume1
             mountPath: /volume1
-          count: 1
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
             name: volume2
             mountPath: /volume2
+
+  - it: Should add volumes if `controller.volumes` is set
+    set:
+      controller:
+        volumes:
+          - name: volume1
+            emptyDir: {}
+          - name: volume2
+            emptyDir: {}
+    asserts:
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: volume1
+            emptyDir: {}
+          count: 1
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: volume2
+            emptyDir: {}
           count: 1
 
-  - it: Should add nodeSelector if `nodeSelector` is set
+  - it: Should add nodeSelector if `controller.nodeSelector` is set
     set:
-      nodeSelector:
-        key1: value1
-        key2: value2
+      controller:
+        nodeSelector:
+          key1: value1
+          key2: value2
     asserts:
       - equal:
           path: spec.template.spec.nodeSelector.key1
@@ -226,26 +295,27 @@ tests:
           path: spec.template.spec.nodeSelector.key2
           value: value2
 
-  - it: Should add affinity if `affinity` is set
+  - it: Should add affinity if `controller.affinity` is set
     set:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: topology.kubernetes.io/zone
-                    operator: In
-                    values:
-                      - antarctica-east1
-                      - antarctica-west1
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 1
-              preference:
-                matchExpressions:
-                  - key: another-node-label-key
-                    operator: In
-                    values:
-                      - another-node-label-value
+      controller:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+                - matchExpressions:
+                    - key: topology.kubernetes.io/zone
+                      operator: In
+                      values:
+                        - antarctica-east1
+                        - antarctica-west1
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 1
+                preference:
+                  matchExpressions:
+                    - key: another-node-label-key
+                      operator: In
+                      values:
+                        - another-node-label-value
     asserts:
       - equal:
           path: spec.template.spec.affinity
@@ -268,16 +338,17 @@ tests:
                         values:
                           - another-node-label-value
 
-  - it: Should add tolerations if tolerations is set
+  - it: Should add tolerations if `controller.tolerations` is set
     set:
-      tolerations:
-        - key: key1
-          operator: Equal
-          value: value1
-          effect: NoSchedule
-        - key: key2
-          operator: Exists
-          effect: NoSchedule
+      controller:
+        tolerations:
+          - key: key1
+            operator: Equal
+            value: value1
+            effect: NoSchedule
+          - key: key2
+            operator: Exists
+            effect: NoSchedule
     asserts:
       - equal:
           path: spec.template.spec.tolerations
@@ -290,12 +361,13 @@ tests:
               operator: Exists
               effect: NoSchedule
 
-  - it: Should add pod securityContext if `podSecurityContext` is set
+  - it: Should add pod securityContext if `controller.podSecurityContext` is set
     set:
-      podSecurityContext:
-        runAsUser: 1000
-        runAsGroup: 2000
-        fsGroup: 3000
+      controller:
+        podSecurityContext:
+          runAsUser: 1000
+          runAsGroup: 2000
+          fsGroup: 3000
     asserts:
       - equal:
           path: spec.template.spec.securityContext.runAsUser

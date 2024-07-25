@@ -18,10 +18,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# -- String to partially override `spark-operator.fullname` template (will maintain the release name).
+# -- String to partially override release name.
 nameOverride: ""
 
-# -- String to override release name.
+# -- String to fully override release name.
 fullnameOverride: ""
 
 # -- Common labels to add to the resources.
@@ -48,6 +48,9 @@ controller:
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
 
+  # -- Reconcile concurrency, higher values might increase memory usage.
+  workers: 10
+
   uiService:
     # -- Specifies whether to create web UI service for Spark application.
     enable: true
@@ -56,8 +59,10 @@ controller:
   # Requires the UI service to be enabled by setting `controller.uiService.enable` to true.
   ingressUrlFormat: ""
 
-  # -- Operator concurrency, higher values might increase memory usage.
-  workers: 10
+  batchScheduler:
+    # -- Specifies whether to enable batch scheduler for spark jobs scheduling.
+    # If enabled, users can specify batch scheduler name in spark application.
+    enable: false
 
   serviceAccount:
     # -- Specifies whether to create a service account for the controller.
@@ -73,45 +78,169 @@ controller:
     # -- Optional annotations for the controller RBAC resources.
     annotations: {}
 
+  # -- Extra labels for controller pods.
+  labels: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Extra annotations for controller pods.
+  annotations: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Environment variables for controller containers.
+  env: []
+
+  # -- Environment variable sources for controller containers.
+  envFrom: []
+
+  # -- Volume mounts for controller containers.
+  volumeMounts: []
+
+  # -- Security context for controller containers.
+  securityContext: {}
+    # runAsUser: 1000
+    # runAsGroup: 2000
+    # fsGroup: 3000
+
+  # -- Sidecar containers for controller pods.
+  sidecars: []
+
+  # -- Volumes for controller pods.
+  volumes: []
+
+  # -- Node selector for controller pods.
+  nodeSelector: {}
+
+  # -- Affinity for controller pods.
+  affinity: {}
+
+  # -- List of node taints to tolerate for controller pods.
+  tolerations: []
+
+  # -- Priority class for controller pods.
+  priorityClassName: ""
+
+  # -- Pod resource requests and limits for controller pods.
+  # Note, that each job submission will spawn a JVM within the controller pods using "/usr/local/openjdk-11/bin/java -Xmx128m".
+  # Kubernetes may kill these Java processes at will to enforce resource limits. When that happens, you will see the following error:
+  # 'failed to run spark-submit for SparkApplication [...]: signal: killed' - when this happens, you may want to increase memory limits.
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 300Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 300Mi
+
+  # -- Security context for controller pods.
+  podSecurityContext: {}
+    # runAsUser: 1000
+    # runAsGroup: 2000
+    # fsGroup: 3000
+
 webhook:
-  # -- Number of replicas of webhook server
+  # -- Number of replicas of webhook server.
   replicaCount: 1
 
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
 
-  # -- Specifies webhook port
+  # -- Specifies webhook port.
   port: 9443
 
-  # -- Specifies webhook service port name
+  # -- Specifies webhook service port name.
   portName: webhook
 
-  # -- Specifies how unrecognized errors are handled, allowed values are `Ignore` or `Fail`.
+  # -- Specifies how unrecognized errors are handled.
+  # Available options are `Ignore` or `Fail`.
   failurePolicy: Fail
 
   # -- Specifies the timeout seconds of the webhook, the value must be between 1 and 30.
   timeoutSeconds: 10
 
+  resourceQuotaEnforcement:
+    # -- Specifies whether to enable the ResourceQuota enforcement for SparkApplication resources.
+    enable: false
+
   serviceAccount:
-    # -- Specifies whether to create a service account for the webhook
+    # -- Specifies whether to create a service account for the webhook.
     create: true
-    # -- Optional name for the webhook service account
+    # -- Optional name for the webhook service account.
     name: ""
-    # -- Optional annotations for the webhook service account
+    # -- Optional annotations for the webhook service account.
     annotations: {}
 
   rbac:
-    # -- Specifies whether to create RBAC resources for the webhook
+    # -- Specifies whether to create RBAC resources for the webhook.
     create: true
-    # -- Optional annotations for the webhook RBAC resources
+    # -- Optional annotations for the webhook RBAC resources.
     annotations: {}
+
+  # -- Extra labels for webhook pods.
+  labels: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Extra annotations for webhook pods.
+  annotations: {}
+    # key1: value1
+    # key2: value2
+
+  # -- Environment variables for webhook containers.
+  env: []
+
+  # -- Environment variable sources for webhook containers.
+  envFrom: []
+
+  # -- Volume mounts for webhook containers.
+  volumeMounts: []
+
+  # -- Security context for webhook containers.
+  securityContext: {}
+    # runAsUser: 1000
+    # runAsGroup: 2000
+    # fsGroup: 3000
+
+  # -- Sidecar containers for webhook pods.
+  sidecars: []
+
+  # -- Volumes for webhook pods.
+  volumes: []
+
+  # -- Node selector for webhook pods.
+  nodeSelector: {}
+
+  # -- Affinity for webhook pods.
+  affinity: {}
+
+  # -- List of node taints to tolerate for webhook pods.
+  tolerations: []
+
+  # -- Priority class for webhook pods.
+  priorityClassName: ""
+
+  # -- Pod resource requests and limits for webhook pods.
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 300Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 300Mi
+
+  # -- Security context for webhook pods.
+  podSecurityContext: {}
+    # runAsUser: 1000
+    # runAsGroup: 2000
+    # fsGroup: 3000
 
 spark:
   # -- List of namespaces where to run spark jobs.
   # If empty string is included, all namespaces will be allowed.
   # Make sure the namespaces have already existed.
   jobNamespaces:
-  - default
+    - default
 
   serviceAccount:
     # -- Specifies whether to create a service account for spark applications.
@@ -153,65 +282,3 @@ prometheus:
     podMetricsEndpoint:
       scheme: http
       interval: 5s
-
-# -- Additional labels to add to the pod
-podLabels: {}
-
-# -- Additional annotations to add to the pod
-podAnnotations: {}
-
-# -- Pod environment variable sources
-envFrom: []
-
-# -- Operator volumeMounts
-volumeMounts: []
-
-# -- Sidecar containers
-sidecars: []
-
-# - Operator volumes
-volumes: []
-
-# -- Node selector for pod assignment.
-nodeSelector: {}
-
-# -- Affinity for pod assignment.
-affinity: {}
-
-# -- List of node taints to tolerate
-tolerations: []
-
-# -- Priority class assigned to pods.
-priorityClassName: ""
-
-# -- Pod resource requests and limits
-# Note, that each job submission will spawn a JVM within the Spark Operator Pod using "/usr/local/openjdk-11/bin/java -Xmx128m".
-# Kubernetes may kill these Java processes at will to enforce resource limits. When that happens, you will see the following error:
-# 'failed to run spark-submit for SparkApplication [...]: signal: killed' - when this happens, you may want to increase memory limits.
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 300Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 300Mi
-
-# -- Pod security context
-podSecurityContext: {}
-
-# -- Container security context
-securityContext: {}
-
-batchScheduler:
-  # -- Enable batch scheduler for spark jobs scheduling. If enabled, users can specify batch scheduler name in spark application
-  enable: false
-
-resourceQuotaEnforcement:
-  # -- Whether to enable the ResourceQuota enforcement for SparkApplication resources.
-  # Requires the webhook to be enabled by setting `webhook.enable` to true.
-  # Ref: https://github.com/kubeflow/spark-operator/blob/master/docs/user-guide.md#enabling-resource-quota-enforcement.
-  enable: false
-
-istio:
-  # -- When using `istio`, spark jobs need to run without a sidecar to properly terminate
-  enable: false

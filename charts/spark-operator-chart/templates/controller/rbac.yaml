@@ -119,7 +119,7 @@ rules:
   - scheduledsparkapplications/finalizers
   verbs:
   - update
-{{- if .Values.batchScheduler.enable }}
+{{- if .Values.controller.batchScheduler.enable }}
 {{/* required for the `volcano` batch scheduler */}}
 - apiGroups:
   - scheduling.incubator.k8s.io

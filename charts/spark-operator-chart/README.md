@@ -75,8 +75,8 @@ See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall) for command docum
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| nameOverride | string | `""` | String to partially override `spark-operator.fullname` template (will maintain the release name). |
-| fullnameOverride | string | `""` | String to override release name. |
+| nameOverride | string | `""` | String to partially override release name. |
+| fullnameOverride | string | `""` | String to fully override release name. |
 | commonLabels | object | `{}` | Common labels to add to the resources. |
 | image.registry | string | `"docker.io"` | Image registry. |
 | image.repository | string | `"kubeflow/spark-operator"` | Image repository. |
@@ -85,25 +85,55 @@ See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall) for command docum
 | image.pullSecrets | list | `[]` | Image pull secrets for private image registry. |
 | controller.replicaCount | int | `1` | Number of replicas of controller. |
 | controller.logLevel | string | `"info"` | Configure the verbosity of logging, can be one of `debug`, `info`, `error`. |
+| controller.workers | int | `10` | Reconcile concurrency, higher values might increase memory usage. |
 | controller.uiService.enable | bool | `true` | Specifies whether to create web UI service for Spark application. |
 | controller.ingressUrlFormat | string | `""` | Ingress URL format. Requires the UI service to be enabled by setting `controller.uiService.enable` to true. |
-| controller.workers | int | `10` | Operator concurrency, higher values might increase memory usage. |
+| controller.batchScheduler.enable | bool | `false` | Specifies whether to enable batch scheduler for spark jobs scheduling. If enabled, users can specify batch scheduler name in spark application. |
 | controller.serviceAccount.create | bool | `true` | Specifies whether to create a service account for the controller. |
 | controller.serviceAccount.name | string | `""` | Optional name for the controller service account. |
 | controller.serviceAccount.annotations | object | `{}` | Optional annotations for the controller service account. |
 | controller.rbac.create | bool | `true` | Specifies whether to create RBAC resources for the controller. |
 | controller.rbac.annotations | object | `{}` | Optional annotations for the controller RBAC resources. |
-| webhook.replicaCount | int | `1` | Number of replicas of webhook server |
+| controller.labels | object | `{}` | Extra labels for controller pods. |
+| controller.annotations | object | `{}` | Extra annotations for controller pods. |
+| controller.env | list | `[]` | Environment variables for controller containers. |
+| controller.envFrom | list | `[]` | Environment variable sources for controller containers. |
+| controller.volumeMounts | list | `[]` | Volume mounts for controller containers. |
+| controller.securityContext | object | `{}` | Security context for controller containers. |
+| controller.sidecars | list | `[]` | Sidecar containers for controller pods. |
+| controller.volumes | list | `[]` | Volumes for controller pods. |
+| controller.nodeSelector | object | `{}` | Node selector for controller pods. |
+| controller.affinity | object | `{}` | Affinity for controller pods. |
+| controller.tolerations | list | `[]` | List of node taints to tolerate for controller pods. |
+| controller.priorityClassName | string | `""` | Priority class for controller pods. |
+| controller.resources | object | `{}` | Pod resource requests and limits for controller pods. Note, that each job submission will spawn a JVM within the controller pods using "/usr/local/openjdk-11/bin/java -Xmx128m". Kubernetes may kill these Java processes at will to enforce resource limits. When that happens, you will see the following error: 'failed to run spark-submit for SparkApplication [...]: signal: killed' - when this happens, you may want to increase memory limits. |
+| controller.podSecurityContext | object | `{}` | Security context for controller pods. |
+| webhook.replicaCount | int | `1` | Number of replicas of webhook server. |
 | webhook.logLevel | string | `"info"` | Configure the verbosity of logging, can be one of `debug`, `info`, `error`. |
-| webhook.port | int | `9443` | Specifies webhook port |
-| webhook.portName | string | `"webhook"` | Specifies webhook service port name |
-| webhook.failurePolicy | string | `"Fail"` | Specifies how unrecognized errors are handled, allowed values are `Ignore` or `Fail`. |
+| webhook.port | int | `9443` | Specifies webhook port. |
+| webhook.portName | string | `"webhook"` | Specifies webhook service port name. |
+| webhook.failurePolicy | string | `"Fail"` | Specifies how unrecognized errors are handled. Available options are `Ignore` or `Fail`. |
 | webhook.timeoutSeconds | int | `10` | Specifies the timeout seconds of the webhook, the value must be between 1 and 30. |
-| webhook.serviceAccount.create | bool | `true` | Specifies whether to create a service account for the webhook |
-| webhook.serviceAccount.name | string | `""` | Optional name for the webhook service account |
-| webhook.serviceAccount.annotations | object | `{}` | Optional annotations for the webhook service account |
-| webhook.rbac.create | bool | `true` | Specifies whether to create RBAC resources for the webhook |
-| webhook.rbac.annotations | object | `{}` | Optional annotations for the webhook RBAC resources |
+| webhook.resourceQuotaEnforcement.enable | bool | `false` | Specifies whether to enable the ResourceQuota enforcement for SparkApplication resources. |
+| webhook.serviceAccount.create | bool | `true` | Specifies whether to create a service account for the webhook. |
+| webhook.serviceAccount.name | string | `""` | Optional name for the webhook service account. |
+| webhook.serviceAccount.annotations | object | `{}` | Optional annotations for the webhook service account. |
+| webhook.rbac.create | bool | `true` | Specifies whether to create RBAC resources for the webhook. |
+| webhook.rbac.annotations | object | `{}` | Optional annotations for the webhook RBAC resources. |
+| webhook.labels | object | `{}` | Extra labels for webhook pods. |
+| webhook.annotations | object | `{}` | Extra annotations for webhook pods. |
+| webhook.env | list | `[]` | Environment variables for webhook containers. |
+| webhook.envFrom | list | `[]` | Environment variable sources for webhook containers. |
+| webhook.volumeMounts | list | `[]` | Volume mounts for webhook containers. |
+| webhook.securityContext | object | `{}` | Security context for webhook containers. |
+| webhook.sidecars | list | `[]` | Sidecar containers for webhook pods. |
+| webhook.volumes | list | `[]` | Volumes for webhook pods. |
+| webhook.nodeSelector | object | `{}` | Node selector for webhook pods. |
+| webhook.affinity | object | `{}` | Affinity for webhook pods. |
+| webhook.tolerations | list | `[]` | List of node taints to tolerate for webhook pods. |
+| webhook.priorityClassName | string | `""` | Priority class for webhook pods. |
+| webhook.resources | object | `{}` | Pod resource requests and limits for webhook pods. |
+| webhook.podSecurityContext | object | `{}` | Security context for webhook pods. |
 | spark.jobNamespaces | list | `["default"]` | List of namespaces where to run spark jobs. If empty string is included, all namespaces will be allowed. Make sure the namespaces have already existed. |
 | spark.serviceAccount.create | bool | `true` | Specifies whether to create a service account for spark applications. |
 | spark.serviceAccount.name | string | `""` | Optional name for the spark service account. |
@@ -119,26 +149,10 @@ See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall) for command docum
 | prometheus.podMonitor.labels | object | `{}` | Pod monitor labels |
 | prometheus.podMonitor.jobLabel | string | `"spark-operator-podmonitor"` | The label to use to retrieve the job name from |
 | prometheus.podMonitor.podMetricsEndpoint | object | `{"interval":"5s","scheme":"http"}` | Prometheus metrics endpoint properties. `metrics.portName` will be used as a port |
-| podLabels | object | `{}` | Additional labels to add to the pod |
-| podAnnotations | object | `{}` | Additional annotations to add to the pod |
-| envFrom | list | `[]` | Pod environment variable sources |
-| volumeMounts | list | `[]` | Operator volumeMounts |
-| sidecars | list | `[]` | Sidecar containers |
-| volumes | list | `[]` |  |
-| nodeSelector | object | `{}` | Node selector for pod assignment. |
-| affinity | object | `{}` | Affinity for pod assignment. |
-| tolerations | list | `[]` | List of node taints to tolerate |
-| priorityClassName | string | `""` | Priority class assigned to pods. |
-| resources | object | `{}` | Pod resource requests and limits Note, that each job submission will spawn a JVM within the Spark Operator Pod using "/usr/local/openjdk-11/bin/java -Xmx128m". Kubernetes may kill these Java processes at will to enforce resource limits. When that happens, you will see the following error: 'failed to run spark-submit for SparkApplication [...]: signal: killed' - when this happens, you may want to increase memory limits. |
-| podSecurityContext | object | `{}` | Pod security context |
-| securityContext | object | `{}` | Container security context |
-| batchScheduler.enable | bool | `false` | Enable batch scheduler for spark jobs scheduling. If enabled, users can specify batch scheduler name in spark application |
-| resourceQuotaEnforcement.enable | bool | `false` | Whether to enable the ResourceQuota enforcement for SparkApplication resources. Requires the webhook to be enabled by setting `webhook.enable` to true. Ref: https://github.com/kubeflow/spark-operator/blob/master/docs/user-guide.md#enabling-resource-quota-enforcement. |
-| istio.enable | bool | `false` | When using `istio`, spark jobs need to run without a sidecar to properly terminate |
 
 ## Maintainers
 
 | Name | Email | Url |
 | ---- | ------ | --- |
-| yuchaoran2011 | <yuchaoran2011@gmail.com> |  |
-| ChenYi015 | <github@chenyicn.net> |  |
+| yuchaoran2011 | <yuchaoran2011@gmail.com> | <https://github.com/yuchaoran2011> |
+| ChenYi015 | <github@chenyicn.net> | <https://github.com/ChenYi015> |

@@ -3,39 +3,44 @@
   "type": "object",
   "properties": {
     "nameOverride": {
-      "type": "string",
-      "description": "Partially override `spark-operator.fullname` template."
+      "description": "Partially override `spark-operator.fullname` template.",
+      "type": "string"
     },
     "fullnameOverride": {
-      "type": "string",
-      "description": "Override release name."
+      "description": "Override release name.",
+      "type": "string"
     },
     "commonLabels": {
+      "description": "Common labels to add to resources.",
       "type": "object",
       "additionalProperties": {
         "type": "string"
-      },
-      "description": "Common labels to add to resources."
+      }
     },
     "image": {
       "type": "object",
       "properties": {
         "registry": {
+          "description": "Image registry.",
           "type": "string",
           "default": "docker.io"
         },
         "repository": {
+          "description": "Image repository.",
           "type": "string",
           "default": "kubeflow/spark-operator"
         },
         "tag": {
+          "description": "Image tag.",
           "type": "string"
         },
         "pullPolicy": {
+          "description": "Image pull policy.",
           "type": "string",
           "default": "IfNotPresent"
         },
         "pullSecrets": {
+          "description": "Image pull secrets.",
           "type": "array",
           "items": {
             "type": "object",
@@ -64,6 +69,10 @@
           ],
           "default": "info"
         },
+        "workers": {
+          "type": "integer",
+          "default": 10
+        },
         "uiService": {
           "type": "object",
           "properties": {
@@ -76,21 +85,31 @@
         "ingressUrlFormat": {
           "type": "string"
         },
-        "workers": {
-          "type": "integer"
+        "batchScheduler": {
+          "enable": {
+            "description": "Specifies whether to enable batch scheduler for spark jobs scheduling.",
+            "type": "boolean",
+            "default": false
+          }
         },
         "serviceAccount": {
           "type": "object",
           "properties": {
             "create": {
+              "description": "Specifies whether to create a service account for the controller.",
               "type": "boolean",
               "default": true
             },
             "name": {
+              "description": "Optional name for the controller service account.",
               "type": "string"
             },
             "annotations": {
-              "type": "object"
+              "description": "Optional annotations for the controller service account.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         },
@@ -98,16 +117,104 @@
           "type": "object",
           "properties": {
             "create": {
+              "description": "Specifies whether to create RBAC resources for the controller.",
               "type": "boolean",
               "default": true
             },
             "annotations": {
+              "description": "Optional annotations for the controller RBAC resources.",
               "type": "object",
               "additionalProperties": {
                 "type": "string"
               }
             }
           }
+        },
+        "labels": {
+          "description": "Extra labels for controller pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "description": "Extra annotations for controller pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "description": "Environment variables for controller containers.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "envFrom": {
+          "description": "Environment variable sources for controller containers.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "volumeMounts": {
+          "description": "Volume mounts for controller containers.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "securityContext": {
+          "description": "Security context for controller containers.",
+          "type": "object"
+        },
+        "sidecars": {
+          "description": "Sidecar containers for controller pods.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "volumes": {
+          "description": "Volumes for controller pods.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "nodeSelector": {
+          "description": "Node selector for controller pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "affinity": {
+          "description": "Affinity for controller pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "tolerations": {
+          "description": "List of node taints to tolerate for controller pods.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "priorityClassName": {
+          "description": "Priority class for controller pods.",
+          "type": "string"
+        },
+        "resources": {
+          "description": "Pod resource requests and limits for controller pods.",
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "description": "Security context for controller pods.",
+          "type": "object"
         }
       }
     },
@@ -149,6 +256,15 @@
           "minimum": 1,
           "maximum": 30
         },
+        "resourceQuotaEnforcement": {
+          "properties": {
+            "enable": {
+              "description": "Whether to enable the ResourceQuota enforcement for SparkApplication resources.",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
         "serviceAccount": {
           "type": "object",
           "properties": {
@@ -160,7 +276,10 @@
               "type": "string"
             },
             "annotations": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         },
@@ -172,9 +291,98 @@
               "default": true
             },
             "annotations": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
+        },
+        "labels": {
+          "description": "Extra labels for webhook pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "description": "Extra annotations for webhook pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "description": "Environment variables for webhook containers.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "envFrom": {
+          "description": "Environment variable sources for webhook containers.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "volumeMounts": {
+          "description": "Volume mounts for webhook containers.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "securityContext": {
+          "description": "Security context for webhook containers.",
+          "type": "object"
+        },
+        "sidecars": {
+          "description": "Sidecar containers for webhook pods.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "volumes": {
+          "description": "Volumes for webhook pods.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "nodeSelector": {
+          "description": "Node selector for webhook pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "affinity": {
+          "description": "Affinity for webhook pods.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "tolerations": {
+          "description": "List of node taints to tolerate for webhook pods.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "priorityClassName": {
+          "description": "Priority class for webhook pods.",
+          "type": "string"
+        },
+        "resources": {
+          "description": "Pod resource requests and limits for webhook pods.",
+          "type": "object"
+        },
+        "podSecurityContext": {
+          "description": "Security context for webhook pods.",
+          "type": "object"
         }
       }
     },
@@ -216,7 +424,10 @@
               "default": true
             },
             "annotations": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           }
         }
@@ -272,110 +483,6 @@
               }
             }
           }
-        }
-      }
-    },
-    "podLabels": {
-      "description": "Additional labels to add to the pod",
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "podAnnotations": {
-      "description": "Additional annotations to add to the pod",
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "envFrom": {
-      "description": "Additional environment variables sources to add to the pod",
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "volumeMounts": {
-      "description": "Extra volume mounts",
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "sidecars": {
-      "description": "Extra sidecar containers",
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "volumes": {
-      "description": "Extra volumes",
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "nodeSelector": {
-      "description": "Node selector for pod assignment",
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      }
-    },
-    "affinity": {
-      "description": "Affinity for pod assignment",
-      "type": "object",
-      "additionalProperties": {
-        "type": "object"
-      }
-    },
-    "tolerations": {
-      "description": "List of node taints to tolerate",
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "priorityClassName": {
-      "description": "Priority class assigned to pods",
-      "type": "string"
-    },
-    "resources": {
-      "description": "Resources for pods",
-      "type": "object"
-    },
-    "podSecurityContext": {
-      "description": "Pod security context",
-      "type": "object"
-    },
-    "securityContext": {
-      "description": "Container security context",
-      "type": "object"
-    },
-    "batchScheduler": {
-      "enable": {
-        "description": "Enable batch scheduler",
-        "type": "boolean",
-        "default": false
-      }
-    },
-    "resourceQuotaEnforcement": {
-      "properties": {
-        "enable": {
-          "description": "Whether to enable the ResourceQuota enforcement for SparkApplication resources.",
-          "type": "boolean",
-          "default": false
-        }
-      }
-    },
-    "istio": {
-      "properties": {
-        "enable": {
-          "description": "spark jobs need to run without a sidecar to properly terminate.",
-          "type": "boolean",
-          "default": false
         }
       }
     }

@@ -31,10 +31,10 @@ spec:
     metadata:
       labels:
         {{- include "spark-operator.webhook.selectorLabels" . | nindent 8 }}
-      {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8}}
+      {{- with .Values.webhook.labels }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.webhook.annotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -61,7 +61,7 @@ spec:
         - --webhook-port={{ .Values.webhook.port }}
         - --mutating-webhook-name={{ include "spark-operator.webhook.name" . }}
         - --validating-webhook-name={{ include "spark-operator.webhook.name" . }}
-        {{- with .Values.resourceQuotaEnforcement.enable }}
+        {{- with .Values.webhook.resourceQuotaEnforcement.enable }}
         - --enable-resource-quota-enforcement=true
         {{- end }}
         {{- if .Values.prometheus.metrics.enable }}
@@ -77,11 +77,19 @@ spec:
         ports:
         - name: {{ .Values.webhook.portName | quote }}
           containerPort: {{ .Values.webhook.port }}
-        {{- with .Values.volumeMounts }}
+        {{- with .Values.webhook.env }}
+        env:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.webhook.envFrom }}
+        envFrom:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.webhook.volumeMounts }}
         volumeMounts:
           {{- toYaml . | nindent 10 }}
         {{- end }}
-        {{- with .Values.resources }}
+        {{- with .Values.webhook.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
@@ -95,31 +103,38 @@ spec:
             port: 8081
             scheme: HTTP
             path: /readyz
+        {{- with .Values.webhook.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- with .Values.webhook.sidecars }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
       {{- with .Values.image.pullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.volumes }}
+      {{- with .Values.webhook.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.webhook.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.webhook.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.webhook.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.priorityClassName }}
+      {{- with .Values.webhook.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
       serviceAccountName: {{ include "spark-operator.webhook.serviceAccountName" . }}
-      {{- with .Values.podSecurityContext }}
+      {{- with .Values.webhook.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}

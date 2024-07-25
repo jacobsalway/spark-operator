@@ -31,17 +31,17 @@ spec:
     metadata:
       labels:
         {{- include "spark-operator.controller.selectorLabels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.controller.labels }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- if or .Values.podAnnotations .Values.prometheus.metrics.enable }}
+      {{- if or .Values.controller.annotations .Values.prometheus.metrics.enable }}
       annotations:
       {{- if .Values.prometheus.metrics.enable }}
         prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Values.prometheus.metrics.port }}"
+        prometheus.io/port: {{ .Values.prometheus.metrics.port | quote }}
         prometheus.io/path: {{ .Values.prometheus.metrics.endpoint }}
       {{- end }}
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.controller.annotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- end }}
@@ -68,7 +68,7 @@ spec:
         {{- with .Values.controller.ingressUrlFormat }}
         - --ingress-url-format={{ . }}
         {{- end }}
-        {{- with .Values.batchScheduler.enable }}
+        {{- with .Values.controller.batchScheduler.enable }}
         - --enable-batch-scheduler=true
         {{- end }}
         {{- if .Values.prometheus.metrics.enable }}
@@ -81,30 +81,24 @@ spec:
         - --leader-election=true
         - --leader-election-lock-name={{ include "spark-operator.controller.leaderElectionName" . }}
         - --leader-election-lock-namespace={{ .Release.Namespace }}
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: metadata.name
-        {{- with .Values.envFrom }}
-        envFrom:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
-        {{- with .Values.securityContext }}
-        securityContext:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
         {{- if .Values.prometheus.metrics.enable }}
         ports:
         - name: {{ .Values.prometheus.metrics.portName | quote }}
           containerPort: {{ .Values.prometheus.metrics.port }}
         {{- end }}
-        {{- with .Values.volumeMounts }}
-        volumeMounts:
-          {{- toYaml . | nindent 10 }}
+        {{- with .Values.controller.env }}
+        env:
+        {{- toYaml . | nindent 8 }}
         {{- end }}
-        {{- with .Values.resources }}
+        {{- with .Values.controller.envFrom }}
+        envFrom:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.controller.volumeMounts }}
+        volumeMounts:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.controller.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
@@ -118,34 +112,38 @@ spec:
             port: 8081
             scheme: HTTP
             path: /readyz
-      {{- with .Values.sidecars }}
+        {{- with .Values.controller.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- with .Values.controller.sidecars }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
       {{- with .Values.image.pullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 6 }}
       {{- end }}
-      {{- with .Values.volumes }}
+      {{- with .Values.controller.volumes }}
       volumes:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 6 }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.controller.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.controller.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.controller.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
+      {{- toYaml . | nindent 6 }}
       {{- end }}
-      {{- with .Values.priorityClassName }}
+      {{- with .Values.controller.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
       serviceAccountName: {{ include "spark-operator.controller.serviceAccountName" . }}
-      {{- with .Values.podSecurityContext }}
+      {{- with .Values.controller.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
