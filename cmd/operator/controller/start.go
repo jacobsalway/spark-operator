@@ -210,7 +210,7 @@ func start() {
 
 		// Register the Volcano and Yunikorn schedulers.
 		registry.Register(common.VolcanoSchedulerName, volcano.Factory)
-		registry.Register(common.YunikornSchedulerName, yunikorn.Factory)
+		registry.Register(yunikorn.SchedulerName, yunikorn.Factory)
 	}
 
 	// Setup controller for SparkApplication.
