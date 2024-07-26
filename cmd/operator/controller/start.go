@@ -53,6 +53,7 @@ import (
 	"github.com/kubeflow/spark-operator/internal/metrics"
 	"github.com/kubeflow/spark-operator/internal/scheduler"
 	"github.com/kubeflow/spark-operator/internal/scheduler/volcano"
+	"github.com/kubeflow/spark-operator/internal/scheduler/yunikorn"
 	"github.com/kubeflow/spark-operator/pkg/common"
 	"github.com/kubeflow/spark-operator/pkg/util"
 	// +kubebuilder:scaffold:imports
@@ -207,8 +208,9 @@ func start() {
 	if enableBatchScheduler {
 		registry = scheduler.GetRegistry()
 
-		// Register volcano scheduler.
+		// Register the Volcano and Yunikorn schedulers.
 		registry.Register(common.VolcanoSchedulerName, volcano.Factory)
+		registry.Register(common.YunikornSchedulerName, yunikorn.Factory)
 	}
 
 	// Setup controller for SparkApplication.
