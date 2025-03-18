@@ -39,9 +39,11 @@ const (
 	executorTaskGroupName = "spark-executor"
 
 	// https://yunikorn.apache.org/docs/next/user_guide/labels_and_annotations_in_yunikorn/
-	taskGroupNameAnnotation = "yunikorn.apache.org/task-group-name"
-	taskGroupsAnnotation    = "yunikorn.apache.org/task-groups"
-	queueLabel              = "queue"
+	prefix                               = "yunikorn.apache.org"
+	taskGroupNameAnnotation              = prefix + "/task-group-name"
+	taskGroupsAnnotation                 = prefix + "/task-groups"
+	schedulingPolicyParametersAnnotation = prefix + "/schedulingPolicyParameters"
+	queueLabel                           = prefix + "/queue"
 )
 
 // This struct has been defined separately rather than imported so that tags can be included for JSON marshalling
@@ -118,6 +120,7 @@ func (s *Scheduler) Schedule(app *v1beta2.SparkApplication) error {
 	// so there is no need to set an application ID
 	// https://github.com/apache/yunikorn-k8shim/blob/2278b3217c702ccb796e4d623bc7837625e5a4ec/pkg/common/utils/utils.go#L168-L171
 	addQueueLabels(app)
+	addSchedulingPolicyParameters(app)
 	if err := addTaskGroupAnnotations(app, taskGroups); err != nil {
 		return fmt.Errorf("failed to add task group annotations: %w", err)
 	}
@@ -165,6 +168,15 @@ func addQueueLabels(app *v1beta2.SparkApplication) {
 		app.Spec.Driver.Labels[queueLabel] = *app.Spec.BatchSchedulerOptions.Queue
 		app.Spec.Executor.Labels[queueLabel] = *app.Spec.BatchSchedulerOptions.Queue
 	}
+}
+
+func addSchedulingPolicyParameters(app *v1beta2.SparkApplication) {
+	if app.Spec.Driver.Annotations == nil {
+		app.Spec.Driver.Annotations = make(map[string]string)
+	}
+
+	// 6 hour gang scheduling timeout
+	app.Spec.Driver.Annotations[schedulingPolicyParametersAnnotation] = "placeholderTimeoutInSeconds=21600 gangSchedulingStyle=Soft"
 }
 
 func mergeNodeSelector(appNodeSelector map[string]string, podNodeSelector map[string]string) map[string]string {
