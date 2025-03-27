@@ -73,6 +73,10 @@ var (
 	controllerThreads int
 	cacheSyncTimeout  time.Duration
 
+	// Kube client
+	kubeClientQPS   float32
+	kubeClientBurst int
+
 	// Webhook
 	enableResourceQuotaEnforcement bool
 	webhookCertDir                 string
@@ -134,6 +138,9 @@ func NewStartCommand() *cobra.Command {
 	command.Flags().StringVar(&labelSelectorFilter, "label-selector-filter", "", "A comma-separated list of key=value, or key labels to filter resources during watch and list based on the specified labels.")
 	command.Flags().DurationVar(&cacheSyncTimeout, "cache-sync-timeout", 30*time.Second, "Informer cache sync timeout.")
 
+	command.Flags().Float32Var(&kubeClientQPS, "kube-client-qps", 20, "Maximum QPS to use while talking to the Kubernetes API.")
+	command.Flags().IntVar(&kubeClientBurst, "kube-client-burst", 30, "Maximum burst for throttle while talking to the Kubernetes API.")
+
 	command.Flags().StringVar(&webhookCertDir, "webhook-cert-dir", "/etc/k8s-webhook-server/serving-certs", "The directory that contains the webhook server key and certificate. "+
 		"When running as nonRoot, you must create and own this directory before running this command.")
 	command.Flags().StringVar(&webhookCertName, "webhook-cert-name", "tls.crt", "The file name of webhook server certificate.")
@@ -183,6 +190,9 @@ func start() {
 		logger.Error(err, "failed to get kube config")
 		os.Exit(1)
 	}
+
+	cfg.QPS = kubeClientQPS
+	cfg.Burst = kubeClientBurst
 
 	// Create the manager.
 	tlsOptions := newTLSOptions()

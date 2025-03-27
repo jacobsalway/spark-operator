@@ -57,6 +57,8 @@ spec:
         - --namespaces={{ . | join "," }}
         {{- end }}
         {{- end }}
+        - --kube-client-qps={{ .Values.webhook.kubeClient.qps }}
+        - --kube-client-burst={{ .Values.webhook.kubeClient.burst }}
         - --webhook-secret-name={{ include "spark-operator.webhook.secretName" . }}
         - --webhook-secret-namespace={{ .Release.Namespace }}
         - --webhook-svc-name={{ include "spark-operator.webhook.serviceName" . }}

@@ -696,3 +696,23 @@ tests:
       - contains:
           path: spec.template.spec.containers[?(@.name=="spark-operator-controller")].args
           content: --max-tracked-executor-per-app=123
+
+  - it: Should contain `--kube-client-qps` arg if `controller.kubeClient.qps` is set
+    set:
+      controller:
+        kubeClient:
+          qps: 50
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name=="spark-operator-controller")].args
+          content: --kube-client-qps=50
+
+  - it: Should contain `--kube-client-burst` arg if `controller.kubeClient.burst` is set
+    set:
+      controller:
+        kubeClient:
+          burst: 100
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name=="spark-operator-controller")].args
+          content: --kube-client-burst=100

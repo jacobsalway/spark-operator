@@ -61,6 +61,12 @@ controller:
   # -- Specifies the maximum number of Executor pods that can be tracked by the controller per SparkApplication.
   maxTrackedExecutorPerApp: 1000
 
+  kubeClient:
+    # -- Maximum QPS to use while talking to the Kubernetes API.
+    qps: 20
+    # -- Maximum burst for throttle while talking to the Kubernetes API.
+    burst: 30
+
   uiService:
     # -- Specifies whether to create service for Spark web UI.
     enable: true
@@ -230,6 +236,12 @@ webhook:
 
   # -- Configure the verbosity of logging, can be one of `debug`, `info`, `error`.
   logLevel: info
+
+  kubeClient:
+    # -- Maximum QPS to use while talking to the Kubernetes API.
+    qps: 20
+    # -- Maximum burst for throttle while talking to the Kubernetes API.
+    burst: 30
 
   # -- Specifies webhook port.
   port: 9443

@@ -82,6 +82,10 @@ var (
 	workqueueRateLimiterBucketSize int
 	workqueueRateLimiterMaxDelay   time.Duration
 
+	// Kube client
+	kubeClientQPS   float32
+	kubeClientBurst int
+
 	// Batch scheduler
 	enableBatchScheduler  bool
 	kubeSchedulerNames    []string
@@ -149,6 +153,9 @@ func NewStartCommand() *cobra.Command {
 	command.Flags().IntVar(&workqueueRateLimiterBucketSize, "workqueue-ratelimiter-bucket-size", 100, "The token bucket size of the workqueue.")
 	command.Flags().DurationVar(&workqueueRateLimiterMaxDelay, "workqueue-ratelimiter-max-delay", rate.InfDuration, "The maximum delay of the workqueue.")
 
+	command.Flags().Float32Var(&kubeClientQPS, "kube-client-qps", 20, "Maximum QPS to use while talking to the Kubernetes API.")
+	command.Flags().IntVar(&kubeClientBurst, "kube-client-burst", 30, "Maximum burst for throttle while talking to the Kubernetes API.")
+
 	command.Flags().BoolVar(&enableBatchScheduler, "enable-batch-scheduler", false, "Enable batch schedulers.")
 	command.Flags().StringSliceVar(&kubeSchedulerNames, "kube-scheduler-names", []string{}, "The kube-scheduler names for scheduling Spark applications.")
 	command.Flags().StringVar(&defaultBatchScheduler, "default-batch-scheduler", "", "Default batch scheduler.")
@@ -199,6 +206,9 @@ func start() {
 		logger.Error(err, "failed to get kube config")
 		os.Exit(1)
 	}
+
+	cfg.QPS = kubeClientQPS
+	cfg.Burst = kubeClientBurst
 
 	// Create the manager.
 	tlsOptions := newTLSOptions()

@@ -564,3 +564,23 @@ tests:
     asserts:
       - failedTemplate:
           errorMessage: "webhook.replicas must be greater than 1 to enable topology spread constraints for webhook pods"
+
+  - it: Should contain `--kube-client-qps` arg if `webhook.kubeClient.qps` is set
+    set:
+      webhook:
+        kubeClient:
+          qps: 50
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name=="spark-operator-webhook")].args
+          content: --kube-client-qps=50
+
+  - it: Should contain `--kube-client-burst` arg if `webhook.kubeClient.burst` is set
+    set:
+      webhook:
+        kubeClient:
+          burst: 100
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[?(@.name=="spark-operator-webhook")].args
+          content: --kube-client-burst=100

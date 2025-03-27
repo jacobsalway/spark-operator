@@ -64,6 +64,8 @@ spec:
         {{- end }}
         {{- end }}
         - --controller-threads={{ .Values.controller.workers }}
+        - --kube-client-qps={{ .Values.controller.kubeClient.qps }}
+        - --kube-client-burst={{ .Values.controller.kubeClient.burst }}
         - --enable-ui-service={{ .Values.controller.uiService.enable }}
         {{- if .Values.controller.uiIngress.enable }}
         {{- with .Values.controller.uiIngress.urlFormat }}
